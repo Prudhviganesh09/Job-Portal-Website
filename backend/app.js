@@ -12,10 +12,9 @@ import fileUpload from "express-fileupload";
 const app = express();
 config({ path: "./config/config.env" });
 
-// Allow access from anywhere
 app.use(
   cors({
-    origin: "*",  // Access allowed from all origins
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",  // Use exact origin
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
