@@ -1,9 +1,10 @@
 import express from "express";
-import dbConnection from "./database/dbConnection.js";
+import dbConnection  from "./database/dbConnection.js";
 import jobRouter from "./routes/jobRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import applicationRouter from "./routes/applicationRoutes.js";
 import { config } from "dotenv";
+import cors from "cors";
 import { errorMiddleware } from "./middlewares/error.js";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
@@ -11,18 +12,13 @@ import fileUpload from "express-fileupload";
 const app = express();
 config();
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");   // Allow access from any origin
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);  // Handle preflight requests
-  }
-
-  next();
-});
+app.use(
+  cors({
+    origin: [process.env.FRONTEND_URL],
+    method: ["GET", "POST", "DELETE", "PUT"],
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json());
@@ -34,13 +30,10 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
-
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
-
 dbConnection();
 
 app.use(errorMiddleware);
-
 export default app;
