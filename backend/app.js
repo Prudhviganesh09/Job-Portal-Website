@@ -1,5 +1,5 @@
 import express from "express";
-import dbConnection  from "./database/dbConnection.js";
+import dbConnection from "./database/dbConnection.js";
 import jobRouter from "./routes/jobRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import applicationRouter from "./routes/applicationRoutes.js";
@@ -12,11 +12,17 @@ import fileUpload from "express-fileupload";
 const app = express();
 config();
 
+// CORS configuration that works with credentials
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL],
-    method: ["GET", "POST", "DELETE", "PUT"],
+    // Instead of wildcard, dynamically allow the requesting origin
+    origin: function(origin, callback) {
+      callback(null, true); // Allow any origin
+    },
+    methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
+    // Important for cookies, authorization headers with HTTPS
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   })
 );
 
@@ -30,10 +36,13 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
+
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRouter);
+
 dbConnection();
 
 app.use(errorMiddleware);
+
 export default app;
